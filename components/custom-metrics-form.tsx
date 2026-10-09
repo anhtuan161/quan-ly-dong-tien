@@ -12,9 +12,22 @@ import { BUILTIN_VARIABLES } from "@/lib/formulas";
 import { useI18n } from "@/components/i18n-provider";
 
 export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: string; initialMetrics: CustomMetric[] }) {
-  const { t } = useI18n();
+  const { t, locale } = useI18n();
+  
+  const defaultSampleMetrics: CustomMetric[] = locale === "vi" ? [
+    { key: "PROFIT_MARGIN", label: "Tỷ suất lợi nhuận", formula: "NET_CASHFLOW / TOTAL_INCOME", format: "percent" },
+    { key: "RUNWAY_MONTHS", label: "Runway (Tháng)", formula: "CASH_POSITION / Math.abs(BURN_RATE)", format: "number" },
+    { key: "TAX_ESTIMATE", label: "Dự phòng thuế (20%)", formula: "NET_CASHFLOW > 0 ? NET_CASHFLOW * 0.2 : 0", format: "currency" },
+    { key: "TARGET_REVENUE", label: "Mục tiêu (1.5x Vốn)", formula: "INITIAL_INVESTMENT * 1.5", format: "currency" }
+  ] : [
+    { key: "PROFIT_MARGIN", label: "Profit Margin", formula: "NET_CASHFLOW / TOTAL_INCOME", format: "percent" },
+    { key: "RUNWAY_MONTHS", label: "Runway (Months)", formula: "CASH_POSITION / Math.abs(BURN_RATE)", format: "number" },
+    { key: "TAX_ESTIMATE", label: "Tax Estimate (20%)", formula: "NET_CASHFLOW > 0 ? NET_CASHFLOW * 0.2 : 0", format: "currency" },
+    { key: "TARGET_REVENUE", label: "Target (1.5x Inv.)", formula: "INITIAL_INVESTMENT * 1.5", format: "currency" }
+  ];
+
   const [metrics, setMetrics] = useState<CustomMetric[]>(
-    initialMetrics.length > 0 ? initialMetrics : [{ key: "", label: "", formula: "", format: "currency" }]
+    initialMetrics.length > 0 ? initialMetrics : defaultSampleMetrics
   );
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
