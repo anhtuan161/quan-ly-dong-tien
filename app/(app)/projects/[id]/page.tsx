@@ -1,12 +1,14 @@
 import { notFound } from "next/navigation";
 import { getProject, getMonthlySummary, getRecentTransactions, projectCurrency } from "@/lib/data";
 import { computeFinance } from "@/lib/finance";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { buildScope, getCustomMetrics, evaluateMetrics } from "@/lib/formulas";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { formatMoney } from "@/lib/utils";
 import { CashflowChart } from "@/components/charts";
-import { TrendingUp, TrendingDown, Target, Wallet, Activity, Receipt } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { TrendingUp, TrendingDown, Target, Wallet, Activity, Settings2 } from "lucide-react";
 import { getTranslator } from "@/lib/i18n/server";
+import { CustomMetricsForm } from "@/components/custom-metrics-form";
 
 export async function generateMetadata({ params }: { params: Promise<{ id: string }> }) {
   const { id } = await params;
@@ -27,6 +29,17 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
 
   const currency = projectCurrency(project.settings);
   const finance = computeFinance(rows, project.initial_investment);
+
+  const scope = buildScope(finance);
+  const customMetrics = getCustomMetrics(project.settings);
+  const results = evaluateMetrics(customMetrics, scope);
+
+  const formatValue = (value: number | null, format?: string) => {
+    if (value === null) return "-";
+    if (format === "percent") return `${(value * 100).toFixed(2)}%`;
+    if (format === "currency") return formatMoney(value, locale, currency);
+    return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(value);
+  };
 
   return (
     <div className="space-y-6">
@@ -150,6 +163,55 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
           </CardContent>
         </Card>
       </div>
+
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Settings2 className="h-5 w-5" /> {t("report.customMetrics")}
+          </CardTitle>
+          <CardDescription>{t("report.customHint")}</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          {results.length > 0 && (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>{t("metric.label")}</TableHead>
+                  <TableHead>{t("metric.key")}</TableHead>
+                  <TableHead>{t("metric.formula")}</TableHead>
+                  <TableHead className="text-right">{t("common.total")}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {results.map((metric) => (
+                  <TableRow key={metric.key}>
+                    <TableCell className="font-medium">{metric.label || metric.key}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm font-mono">{metric.key}</TableCell>
+                    <TableCell className="text-muted-foreground text-sm font-mono">{metric.formula}</TableCell>
+                    <TableCell className="text-right font-bold text-lg">
+                      {metric.error ? (
+                        <span className="text-destructive text-sm" title={metric.error}>{t("report.error")}</span>
+                      ) : (
+                        formatValue(metric.value, metric.format)
+                      )}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+
+          <details className="w-full border rounded-md px-4 group mt-6">
+            <summary className="list-none cursor-pointer py-4 font-medium text-sm flex items-center justify-between">
+              {t("metric.edit")} / {t("metric.add")}
+              <span className="text-muted-foreground group-open:rotate-180 transition-transform">▼</span>
+            </summary>
+            <div className="pt-2 pb-6 border-t mt-2">
+              <CustomMetricsForm projectId={project.id} initialMetrics={customMetrics} />
+            </div>
+          </details>
+        </CardContent>
+      </Card>
     </div>
   );
 }

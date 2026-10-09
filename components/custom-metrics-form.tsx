@@ -15,15 +15,29 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
   const { t, locale } = useI18n();
   
   const defaultSampleMetrics: CustomMetric[] = locale === "vi" ? [
-    { key: "PROFIT_MARGIN", label: "Tỷ suất lợi nhuận", formula: "NET_CASHFLOW / TOTAL_INCOME", format: "percent" },
-    { key: "RUNWAY_MONTHS", label: "Runway (Tháng)", formula: "CASH_POSITION / Math.abs(BURN_RATE)", format: "number" },
-    { key: "TAX_ESTIMATE", label: "Dự phòng thuế (20%)", formula: "NET_CASHFLOW > 0 ? NET_CASHFLOW * 0.2 : 0", format: "currency" },
-    { key: "TARGET_REVENUE", label: "Mục tiêu (1.5x Vốn)", formula: "INITIAL_INVESTMENT * 1.5", format: "currency" }
+    { key: "KPI_INCOME", label: "Tổng doanh thu", formula: "TOTAL_INCOME", format: "currency" },
+    { key: "KPI_EXPENSE", label: "Tổng chi phí", formula: "TOTAL_EXPENSE", format: "currency" },
+    { key: "KPI_NET", label: "Dòng tiền ròng", formula: "NET_CASHFLOW", format: "currency" },
+    { key: "KPI_INVESTMENT", label: "Vốn đầu tư ban đầu", formula: "INITIAL_INVESTMENT", format: "currency" },
+    { key: "KPI_CASH", label: "Vị thế tiền mặt (Cash Position)", formula: "CASH_POSITION", format: "currency" },
+    { key: "KPI_ROI", label: "Tỷ suất sinh lời (ROI)", formula: "ROI", format: "percent" },
+    { key: "KPI_MONTHS", label: "Số tháng hoạt động", formula: "MONTHS_ACTIVE", format: "number" },
+    { key: "KPI_AVG_INCOME", label: "Thu trung bình tháng", formula: "AVG_MONTHLY_INCOME", format: "currency" },
+    { key: "KPI_AVG_EXPENSE", label: "Chi trung bình tháng", formula: "AVG_MONTHLY_EXPENSE", format: "currency" },
+    { key: "KPI_BURN", label: "Tốc độ đốt tiền (Burn Rate)", formula: "BURN_RATE", format: "currency" },
+    { key: "KPI_AVG_NET", label: "Lãi ròng trung bình tháng", formula: "AVG_MONTHLY_NET", format: "currency" },
   ] : [
-    { key: "PROFIT_MARGIN", label: "Profit Margin", formula: "NET_CASHFLOW / TOTAL_INCOME", format: "percent" },
-    { key: "RUNWAY_MONTHS", label: "Runway (Months)", formula: "CASH_POSITION / Math.abs(BURN_RATE)", format: "number" },
-    { key: "TAX_ESTIMATE", label: "Tax Estimate (20%)", formula: "NET_CASHFLOW > 0 ? NET_CASHFLOW * 0.2 : 0", format: "currency" },
-    { key: "TARGET_REVENUE", label: "Target (1.5x Inv.)", formula: "INITIAL_INVESTMENT * 1.5", format: "currency" }
+    { key: "KPI_INCOME", label: "Total Income", formula: "TOTAL_INCOME", format: "currency" },
+    { key: "KPI_EXPENSE", label: "Total Expense", formula: "TOTAL_EXPENSE", format: "currency" },
+    { key: "KPI_NET", label: "Net Cashflow", formula: "NET_CASHFLOW", format: "currency" },
+    { key: "KPI_INVESTMENT", label: "Initial Investment", formula: "INITIAL_INVESTMENT", format: "currency" },
+    { key: "KPI_CASH", label: "Cash Position", formula: "CASH_POSITION", format: "currency" },
+    { key: "KPI_ROI", label: "ROI", formula: "ROI", format: "percent" },
+    { key: "KPI_MONTHS", label: "Months Active", formula: "MONTHS_ACTIVE", format: "number" },
+    { key: "KPI_AVG_INCOME", label: "Avg Monthly Income", formula: "AVG_MONTHLY_INCOME", format: "currency" },
+    { key: "KPI_AVG_EXPENSE", label: "Avg Monthly Expense", formula: "AVG_MONTHLY_EXPENSE", format: "currency" },
+    { key: "KPI_BURN", label: "Burn Rate", formula: "BURN_RATE", format: "currency" },
+    { key: "KPI_AVG_NET", label: "Avg Monthly Net", formula: "AVG_MONTHLY_NET", format: "currency" },
   ];
 
   const [metrics, setMetrics] = useState<CustomMetric[]>(
