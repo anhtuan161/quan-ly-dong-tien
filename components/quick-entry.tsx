@@ -113,7 +113,7 @@ export function QuickEntry({
 
           {projects.length > 1 && (
             <div className="space-y-2">
-              <Label>Project</Label>
+              <Label>{t("nav.projects")}</Label>
               <Select value={projectId} onValueChange={setProjectId}>
                 <SelectTrigger>
                   <SelectValue />
@@ -131,7 +131,7 @@ export function QuickEntry({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label>Date</Label>
+              <Label>{t("txn.date")}</Label>
               <Input
                 type="date"
                 required
@@ -140,7 +140,7 @@ export function QuickEntry({
               />
             </div>
             <div className="space-y-2">
-              <Label>Type</Label>
+              <Label>{t("txn.type")}</Label>
               <Select
                 value={type}
                 onValueChange={(v) => {
@@ -160,10 +160,10 @@ export function QuickEntry({
           </div>
 
           <div className="space-y-2">
-            <Label>Category</Label>
+            <Label>{t("txn.category")}</Label>
             <Select value={categoryId} onValueChange={setCategoryId}>
               <SelectTrigger>
-                <SelectValue placeholder="Select category..." />
+                <SelectValue placeholder={t("txn.category")} />
               </SelectTrigger>
               <SelectContent>
                 {filteredCategories.map((c) => (
@@ -176,7 +176,7 @@ export function QuickEntry({
           </div>
 
           <div className="space-y-2">
-            <Label>Amount</Label>
+            <Label>{t("txn.amount")}</Label>
             <Input
               type="text"
               required
@@ -193,7 +193,7 @@ export function QuickEntry({
           </div>
 
           <div className="space-y-2">
-            <Label>Note (optional)</Label>
+            <Label>{t("txn.note")}</Label>
             <Input
               value={note}
               onChange={(e) => setNote(e.target.value)}
@@ -202,7 +202,7 @@ export function QuickEntry({
           </div>
 
           <Button type="submit" className="w-full" disabled={isPending || !parsedAmount}>
-            {isPending ? "Saving..." : t("txn.save")}
+            {isPending ? t("common.loading") : t("txn.save")}
           </Button>
         </form>
       </DialogContent>

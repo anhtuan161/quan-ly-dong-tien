@@ -141,6 +141,7 @@ const en = {
   "cat.added": "Category added",
 
   "member.title": "Members",
+  "member.desc": "People with access to this project",
   "member.email": "User email",
   "member.role": "Role",
   "member.invite": "Add member",
@@ -305,6 +306,7 @@ const vi: Dictionary = {
   "cat.added": "Đã thêm danh mục",
 
   "member.title": "Thành viên",
+  "member.desc": "Những người có quyền truy cập dự án này",
   "member.email": "Email người dùng",
   "member.role": "Vai trò",
   "member.invite": "Thêm thành viên",

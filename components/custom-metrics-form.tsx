@@ -9,8 +9,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { saveCustomMetrics } from "@/lib/actions";
 import type { CustomMetric } from "@/lib/types";
 import { BUILTIN_VARIABLES } from "@/lib/formulas";
+import { useI18n } from "@/components/i18n-provider";
 
 export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: string; initialMetrics: CustomMetric[] }) {
+  const { t } = useI18n();
   const [metrics, setMetrics] = useState<CustomMetric[]>(
     initialMetrics.length > 0 ? initialMetrics : [{ key: "", label: "", formula: "", format: "currency" }]
   );
@@ -65,7 +67,7 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
         {metrics.map((metric, index) => (
           <div key={index} className="grid grid-cols-12 gap-3 items-start border p-3 rounded-md relative">
             <div className="col-span-12 md:col-span-3 space-y-2">
-              <Label className="text-xs">Key (Variable name)</Label>
+              <Label className="text-xs">{t("metric.key")}</Label>
               <Input 
                 placeholder="e.g. TAX_ESTIMATE" 
                 value={metric.key} 
@@ -75,7 +77,7 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
               />
             </div>
             <div className="col-span-12 md:col-span-3 space-y-2">
-              <Label className="text-xs">Label (Optional UI name)</Label>
+              <Label className="text-xs">{t("metric.label")}</Label>
               <Input 
                 placeholder="e.g. Tax (10%)" 
                 value={metric.label || ""} 
@@ -83,7 +85,7 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
               />
             </div>
             <div className="col-span-12 md:col-span-4 space-y-2">
-              <Label className="text-xs">Formula</Label>
+              <Label className="text-xs">{t("metric.formula")}</Label>
               <Input 
                 placeholder="e.g. TOTAL_INCOME * 0.1" 
                 value={metric.formula} 
@@ -92,15 +94,15 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
               />
             </div>
             <div className="col-span-10 md:col-span-2 space-y-2">
-              <Label className="text-xs">Format</Label>
+              <Label className="text-xs">{t("metric.format")}</Label>
               <Select value={metric.format || "currency"} onValueChange={(v) => updateMetric(index, "format", v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="currency">Currency</SelectItem>
-                  <SelectItem value="percent">Percent</SelectItem>
-                  <SelectItem value="number">Number</SelectItem>
+                  <SelectItem value="currency">{t("metric.format.currency")}</SelectItem>
+                  <SelectItem value="percent">{t("metric.format.percent")}</SelectItem>
+                  <SelectItem value="number">{t("metric.format.number")}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -110,6 +112,7 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
               size="icon"
               className="absolute top-2 right-2 text-muted-foreground hover:text-destructive"
               onClick={() => removeMetric(index)}
+              title={t("common.remove")}
             >
               <Trash2 className="h-4 w-4" />
             </Button>
@@ -118,20 +121,19 @@ export function CustomMetricsForm({ projectId, initialMetrics }: { projectId: st
       </div>
 
       <div className="flex flex-col gap-2 pt-2 text-xs text-muted-foreground">
-        <p><strong>Available Built-in Variables:</strong></p>
+        <p><strong>{t("report.variables")}:</strong></p>
         <p className="font-mono">{BUILTIN_VARIABLES.join(", ")}</p>
-        <p>You can also reference the <code>Key</code> of any custom metric defined above it.</p>
       </div>
 
       {error && <div className="text-sm font-medium text-destructive">{error}</div>}
-      {success && <div className="text-sm font-medium text-emerald-500">Settings saved successfully!</div>}
+      {success && <div className="text-sm font-medium text-emerald-500">{t("metric.saved")}</div>}
 
       <div className="flex gap-2 justify-end pt-4">
         <Button type="button" variant="outline" onClick={addMetric}>
-          <Plus className="mr-2 h-4 w-4" /> Add Metric
+          <Plus className="mr-2 h-4 w-4" /> {t("metric.add")}
         </Button>
         <Button type="submit" disabled={isPending}>
-          {isPending ? "Saving..." : "Save Metrics"}
+          {isPending ? t("common.loading") : t("metric.save")}
         </Button>
       </div>
     </form>

@@ -47,7 +47,7 @@ export function CashflowChart({ data, currency }: { data: MonthPoint[]; currency
           tickMargin={10}
           fontSize={12}
           tickFormatter={(value) =>
-            new Intl.NumberFormat("en-US", { notation: "compact", compactDisplay: "short" }).format(
+            new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US", { notation: "compact", compactDisplay: "short" }).format(
               value
             )
           }
@@ -67,7 +67,7 @@ export function CashflowChart({ data, currency }: { data: MonthPoint[]; currency
                           className="h-2 w-2 rounded-full"
                           style={{ backgroundColor: entry.color }}
                         />
-                        {entry.name === "income" ? t("chart.income") : entry.name === "expense" ? t("chart.expense") : entry.name}
+                        {entry.name}
                       </span>
                       <span className="font-medium text-sm">
                         {formatMoney(entry.value as number, locale, currency)}
@@ -75,7 +75,7 @@ export function CashflowChart({ data, currency }: { data: MonthPoint[]; currency
                     </div>
                   ))}
                   <div className="mt-1 pt-1 border-t flex items-center justify-between gap-4">
-                    <span className="text-sm font-medium">Net</span>
+                    <span className="text-sm font-medium">{t("kpi.net")}</span>
                     <span
                       className={`text-sm font-bold ${
                         payload[0].payload.net >= 0 ? "text-emerald-500" : "text-rose-500"
@@ -91,8 +91,8 @@ export function CashflowChart({ data, currency }: { data: MonthPoint[]; currency
         />
         <Legend verticalAlign="top" height={36} iconType="circle" />
         <ReferenceLine y={0} stroke="hsl(var(--muted-foreground))" strokeDasharray="3 3" />
-        <Bar dataKey="income" name="Income" fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={50} />
-        <Bar dataKey="expense" name="Expense" fill="#f43f5e" radius={[4, 4, 0, 0]} maxBarSize={50} />
+        <Bar dataKey="income" name={t("chart.income")} fill="#10b981" radius={[4, 4, 0, 0]} maxBarSize={50} />
+        <Bar dataKey="expense" name={t("chart.expense")} fill="#f43f5e" radius={[4, 4, 0, 0]} maxBarSize={50} />
       </BarChart>
     </ResponsiveContainer>
   );
