@@ -71,8 +71,11 @@ create index if not exists transactions_category_idx on public.transactions (cat
 
 -- ----------------------------------------------------------------------------
 -- RLS helper functions (SECURITY DEFINER avoids recursive policy evaluation)
+-- Kept in a private schema to avoid exposing them via the PostgREST Data API.
 -- ----------------------------------------------------------------------------
-create or replace function public.is_project_member(p_project_id uuid)
+create schema if not exists private;
+
+create or replace function private.is_project_member(p_project_id uuid)
 returns boolean
 language sql stable security definer set search_path = public
 as $$
@@ -82,7 +85,7 @@ as $$
   );
 $$;
 
-create or replace function public.has_project_role(p_project_id uuid, p_roles public.member_role[])
+create or replace function private.has_project_role(p_project_id uuid, p_roles public.member_role[])
 returns boolean
 language sql stable security definer set search_path = public
 as $$
@@ -104,7 +107,7 @@ alter table public.transactions    enable row level security;
 drop policy if exists "projects_select_members" on public.projects;
 create policy "projects_select_members" on public.projects
   for select to authenticated
-  using (public.is_project_member(id));
+  using (private.is_project_member(id));
 
 drop policy if exists "projects_insert_self" on public.projects;
 create policy "projects_insert_self" on public.projects
@@ -114,72 +117,72 @@ create policy "projects_insert_self" on public.projects
 drop policy if exists "projects_update_editors" on public.projects;
 create policy "projects_update_editors" on public.projects
   for update to authenticated
-  using (public.has_project_role(id, array['admin', 'editor']::public.member_role[]))
-  with check (public.has_project_role(id, array['admin', 'editor']::public.member_role[]));
+  using (private.has_project_role(id, array['admin', 'editor']::public.member_role[]))
+  with check (private.has_project_role(id, array['admin', 'editor']::public.member_role[]));
 
 drop policy if exists "projects_delete_admins" on public.projects;
 create policy "projects_delete_admins" on public.projects
   for delete to authenticated
-  using (public.has_project_role(id, array['admin']::public.member_role[]));
+  using (private.has_project_role(id, array['admin']::public.member_role[]));
 
 -- ------------------------- project_members ----------------------------------
 drop policy if exists "members_select_same_project" on public.project_members;
 create policy "members_select_same_project" on public.project_members
   for select to authenticated
-  using (public.is_project_member(project_id));
+  using (private.is_project_member(project_id));
 
 drop policy if exists "members_insert_admins" on public.project_members;
 create policy "members_insert_admins" on public.project_members
   for insert to authenticated
-  with check (public.has_project_role(project_id, array['admin']::public.member_role[]));
+  with check (private.has_project_role(project_id, array['admin']::public.member_role[]));
 
 drop policy if exists "members_update_admins" on public.project_members;
 create policy "members_update_admins" on public.project_members
   for update to authenticated
-  using (public.has_project_role(project_id, array['admin']::public.member_role[]))
-  with check (public.has_project_role(project_id, array['admin']::public.member_role[]));
+  using (private.has_project_role(project_id, array['admin']::public.member_role[]))
+  with check (private.has_project_role(project_id, array['admin']::public.member_role[]));
 
 drop policy if exists "members_delete_admins_or_self" on public.project_members;
 create policy "members_delete_admins_or_self" on public.project_members
   for delete to authenticated
   using (
     user_id = auth.uid()
-    or public.has_project_role(project_id, array['admin']::public.member_role[])
+    or private.has_project_role(project_id, array['admin']::public.member_role[])
   );
 
 -- ---------------------------- categories ------------------------------------
 drop policy if exists "categories_select_members" on public.categories;
 create policy "categories_select_members" on public.categories
   for select to authenticated
-  using (public.is_project_member(project_id));
+  using (private.is_project_member(project_id));
 
 drop policy if exists "categories_write_editors" on public.categories;
 create policy "categories_write_editors" on public.categories
   for all to authenticated
-  using (public.has_project_role(project_id, array['admin', 'editor']::public.member_role[]))
-  with check (public.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
+  using (private.has_project_role(project_id, array['admin', 'editor']::public.member_role[]))
+  with check (private.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
 
 -- --------------------------- transactions -----------------------------------
 drop policy if exists "transactions_select_members" on public.transactions;
 create policy "transactions_select_members" on public.transactions
   for select to authenticated
-  using (public.is_project_member(project_id));
+  using (private.is_project_member(project_id));
 
 drop policy if exists "transactions_insert_editors" on public.transactions;
 create policy "transactions_insert_editors" on public.transactions
   for insert to authenticated
-  with check (public.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
+  with check (private.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
 
 drop policy if exists "transactions_update_editors" on public.transactions;
 create policy "transactions_update_editors" on public.transactions
   for update to authenticated
-  using (public.has_project_role(project_id, array['admin', 'editor']::public.member_role[]))
-  with check (public.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
+  using (private.has_project_role(project_id, array['admin', 'editor']::public.member_role[]))
+  with check (private.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
 
 drop policy if exists "transactions_delete_editors" on public.transactions;
 create policy "transactions_delete_editors" on public.transactions
   for delete to authenticated
-  using (public.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
+  using (private.has_project_role(project_id, array['admin', 'editor']::public.member_role[]));
 
 -- ----------------------------------------------------------------------------
 -- Triggers
@@ -246,7 +249,7 @@ as $$
 declare
   v_user uuid;
 begin
-  if not public.has_project_role(p_project_id, array['admin']::public.member_role[]) then
+  if not private.has_project_role(p_project_id, array['admin']::public.member_role[]) then
     raise exception 'permission denied' using errcode = '42501';
   end if;
 
@@ -269,7 +272,7 @@ as $$
   from public.project_members m
   join auth.users u on u.id = m.user_id
   where m.project_id = p_project_id
-    and public.is_project_member(p_project_id)
+    and private.is_project_member(p_project_id)
   order by m.created_at;
 $$;
 

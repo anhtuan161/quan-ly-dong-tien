@@ -15,7 +15,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function ProjectDashboard({ params }: { params: Promise<{ id: string }> }) {
-  const { locale } = await getTranslator();
+  const { t, locale } = await getTranslator();
   const { id } = await params;
   const project = await getProject(id);
   if (!project) notFound();
@@ -33,14 +33,14 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">{project.name}</h1>
-          <p className="text-muted-foreground mt-1">Project Dashboard</p>
+          <p className="text-muted-foreground mt-1">{t("nav.dashboard")}</p>
         </div>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Initial Inv.</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("kpi.investment")}</CardTitle>
             <Wallet className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -50,7 +50,7 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("kpi.revenue")}</CardTitle>
             <TrendingUp className="h-4 w-4 text-emerald-500" />
           </CardHeader>
           <CardContent>
@@ -60,7 +60,7 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Burn</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("kpi.burn")}</CardTitle>
             <TrendingDown className="h-4 w-4 text-rose-500" />
           </CardHeader>
           <CardContent>
@@ -70,7 +70,7 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
         
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Net Cashflow</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("kpi.net")}</CardTitle>
             <Activity className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
@@ -79,7 +79,7 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
             </div>
             {finance.roi !== null && (
               <p className="text-xs text-muted-foreground mt-1">
-                ROI: {(finance.roi * 100).toFixed(2)}%
+                {t("kpi.roi")}: {(finance.roi * 100).toFixed(2)}%
               </p>
             )}
           </CardContent>
@@ -87,18 +87,21 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
 
         <Card>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Break-even</CardTitle>
+            <CardTitle className="text-sm font-medium">{t("kpi.breakEven")}</CardTitle>
             <Target className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {finance.breakEven.status === 'reached' && finance.breakEven.month}
-              {finance.breakEven.status === 'projected' && `~${finance.breakEven.months}m`}
-              {finance.breakEven.status === 'unreachable' && 'N/A'}
-              {finance.breakEven.status === 'nodata' && '-'}
+              {finance.breakEven.status === 'reached' && t("kpi.reached")}
+              {finance.breakEven.status === 'projected' && t("kpi.inMonths", { months: finance.breakEven.months! })}
+              {finance.breakEven.status === 'unreachable' && t("kpi.notReachable")}
+              {finance.breakEven.status === 'nodata' && t("kpi.noData")}
             </div>
             {finance.breakEven.status === 'projected' && (
-              <p className="text-xs text-muted-foreground mt-1">Est. {finance.breakEven.month}</p>
+              <p className="text-xs text-muted-foreground mt-1">{t("kpi.eta", { date: finance.breakEven.month! })}</p>
+            )}
+            {finance.breakEven.status === 'reached' && (
+              <p className="text-xs text-muted-foreground mt-1">{t("kpi.reachedOn", { date: finance.breakEven.month! })}</p>
             )}
           </CardContent>
         </Card>
@@ -107,7 +110,7 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
       <div className="grid gap-4 md:grid-cols-7 lg:grid-cols-3">
         <Card className="md:col-span-4 lg:col-span-2">
           <CardHeader>
-            <CardTitle>Cashflow</CardTitle>
+            <CardTitle>{t("chart.monthly")}</CardTitle>
           </CardHeader>
           <CardContent className="pl-2">
             <CashflowChart data={finance.monthly} currency={currency} />
@@ -116,11 +119,11 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
 
         <Card className="md:col-span-3 lg:col-span-1">
           <CardHeader>
-            <CardTitle>Recent Transactions</CardTitle>
+            <CardTitle>{t("dash.recent")}</CardTitle>
           </CardHeader>
           <CardContent>
             {recentTxns.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No transactions yet.</p>
+              <p className="text-sm text-muted-foreground">{t("txn.none")}</p>
             ) : (
               <div className="space-y-4">
                 {recentTxns.map((txn) => (
@@ -128,9 +131,9 @@ export default async function ProjectDashboard({ params }: { params: Promise<{ i
                     <div>
                       <p className="text-sm font-medium">
                         {txn.type === "INCOME" ? (
-                          <span className="text-emerald-500">Income</span>
+                          <span className="text-emerald-500">{t("chart.income")}</span>
                         ) : (
-                          <span className="text-rose-500">Expense</span>
+                          <span className="text-rose-500">{t("chart.expense")}</span>
                         )}
                       </p>
                       <p className="text-xs text-muted-foreground">

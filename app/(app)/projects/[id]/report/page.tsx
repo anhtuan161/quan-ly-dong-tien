@@ -14,7 +14,7 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
 }
 
 export default async function ProjectReport({ params }: { params: Promise<{ id: string }> }) {
-  const { locale } = await getTranslator();
+  const { t, locale } = await getTranslator();
   const { id } = await params;
   const project = await getProject(id);
   if (!project) notFound();
@@ -31,7 +31,7 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
   const expenseTotals = totalsByCategory(rows, "EXPENSE");
   
   const categoryMap = new Map(allCategories.map(c => [c.id, c.name]));
-  const getCatName = (id: string | null) => (id && categoryMap.get(id)) || "Uncategorized";
+  const getCatName = (id: string | null) => (id && categoryMap.get(id)) || t("txn.noCategory");
 
   // Formulas
   const scope = buildScope(finance);
@@ -42,30 +42,30 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
     if (value === null) return "-";
     if (format === "percent") return `${(value * 100).toFixed(2)}%`;
     if (format === "currency") return formatMoney(value, locale, currency);
-    return new Intl.NumberFormat("en-US").format(value);
+    return new Intl.NumberFormat(locale === "vi" ? "vi-VN" : "en-US").format(value);
   };
 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Financial Report</h1>
+        <h1 className="text-3xl font-bold tracking-tight">{t("report.title")}</h1>
         <p className="text-muted-foreground mt-1">{project.name}</p>
       </div>
 
       <div className="grid gap-6 md:grid-cols-2">
         <Card>
           <CardHeader>
-            <CardTitle>Income Breakdown</CardTitle>
+            <CardTitle>{t("report.revenue")}</CardTitle>
           </CardHeader>
           <CardContent>
             {incomeTotals.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No income recorded.</p>
+              <p className="text-sm text-muted-foreground">{t("txn.none")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>{t("txn.category")}</TableHead>
+                    <TableHead className="text-right">{t("common.total")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -78,7 +78,7 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
                     </TableRow>
                   ))}
                   <TableRow>
-                    <TableCell className="font-bold">Total Income</TableCell>
+                    <TableCell className="font-bold">{t("report.totalRevenue")}</TableCell>
                     <TableCell className="text-right font-bold text-emerald-500">
                       {formatMoney(finance.totalIncome, locale, currency)}
                     </TableCell>
@@ -91,17 +91,17 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
 
         <Card>
           <CardHeader>
-            <CardTitle>Expense Breakdown</CardTitle>
+            <CardTitle>{t("report.expenses")}</CardTitle>
           </CardHeader>
           <CardContent>
             {expenseTotals.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No expenses recorded.</p>
+              <p className="text-sm text-muted-foreground">{t("txn.none")}</p>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Category</TableHead>
-                    <TableHead className="text-right">Total</TableHead>
+                    <TableHead>{t("txn.category")}</TableHead>
+                    <TableHead className="text-right">{t("common.total")}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -114,7 +114,7 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
                     </TableRow>
                   ))}
                   <TableRow>
-                    <TableCell className="font-bold">Total Expense</TableCell>
+                    <TableCell className="font-bold">{t("report.totalExpenses")}</TableCell>
                     <TableCell className="text-right font-bold text-rose-500">
                       {formatMoney(finance.totalExpense, locale, currency)}
                     </TableCell>
@@ -128,19 +128,19 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
 
       <Card>
         <CardHeader>
-          <CardTitle>Custom Metrics & Formulas</CardTitle>
+          <CardTitle>{t("report.customMetrics")}</CardTitle>
         </CardHeader>
         <CardContent>
           {results.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No custom metrics defined. Add them in Project Settings.</p>
+            <p className="text-sm text-muted-foreground">{t("report.noMetrics")}</p>
           ) : (
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Metric</TableHead>
-                  <TableHead>Key</TableHead>
-                  <TableHead>Formula</TableHead>
-                  <TableHead className="text-right">Value</TableHead>
+                  <TableHead>{t("metric.label")}</TableHead>
+                  <TableHead>{t("metric.key")}</TableHead>
+                  <TableHead>{t("metric.formula")}</TableHead>
+                  <TableHead className="text-right">{t("common.total")}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -151,7 +151,7 @@ export default async function ProjectReport({ params }: { params: Promise<{ id: 
                     <TableCell className="text-muted-foreground text-sm font-mono">{metric.formula}</TableCell>
                     <TableCell className="text-right font-bold">
                       {metric.error ? (
-                        <span className="text-destructive text-sm" title={metric.error}>Error</span>
+                        <span className="text-destructive text-sm" title={metric.error}>{t("report.error")}</span>
                       ) : (
                         formatValue(metric.value, metric.format)
                       )}
